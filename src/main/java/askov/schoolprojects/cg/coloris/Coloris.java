@@ -46,7 +46,7 @@ public class Coloris extends Application {
     private static final double HEIGHT = 650;
     private static final double BLOCK_SIZE = WIDTH / 28;
     private static final double SQUARE_MATRIX_WIDTH = SquareMatrix.DEFAULT_NUM_COLUMNS * BLOCK_SIZE;
-    private static final double SQUARE_MATRIX_HEIGHT = (SquareMatrix.DEFAULT_NUM_ROWS + Block.DEFAULT_NUM_SQUARES) * BLOCK_SIZE;   
+    private static final double SQUARE_MATRIX_HEIGHT = (SquareMatrix.DEFAULT_NUM_ROWS + Block.DEFAULT_NUM_SQUARES) * BLOCK_SIZE;
 
     private final Universe universe = new Universe(WIDTH, HEIGHT);
     private final Well well = new Well(SQUARE_MATRIX_WIDTH, SQUARE_MATRIX_HEIGHT);
@@ -58,9 +58,9 @@ public class Coloris extends Application {
 
     private GameLogic gameLogic;
     private AnimationTimer animationTimer;
-    
+
     private Scene scene;
-    
+
     private final Media media = new Media(Thread.currentThread().getContextClassLoader().getResource("music/music.mp3").toExternalForm());
     private final MediaPlayer mediaPlayer = new MediaPlayer(media);
 
@@ -69,29 +69,33 @@ public class Coloris extends Application {
         root = new Group();
 
         root.getChildren().addAll(universe, well);
-        
+
         well.setTranslateX(-well.getWidth() / 2 + WIDTH / 3.);
         well.setTranslateY(-well.getBorderSize());
 
         fallingBlock = well.getFallingBlock();
-        
+
         nextBlock.setTranslateX(-BLOCK_SIZE / 2 + 0.50 * well.getTranslateX());
         nextBlock.setTranslateY(0.15 * HEIGHT);
-        
+
         GameLogo gameLogo = new GameLogo();
         gameLogo.setTranslateX(-gameLogo.getWidth() / 2 + 0.50 * well.getTranslateX());
         gameLogo.setTranslateY(nextBlock.getTranslateY() + nextBlock.getHeight() + GameLogo.FONT_SIZE + 10);
 
         root.getChildren().addAll(nextBlock, gameLogo);
-        
+
         LabeledValue score = new LabeledValue(SQUARE_MATRIX_WIDTH, HEIGHT / 6, "SCORE", 0);
         score.setTranslateX(-score.getWidth() / 2 + (WIDTH - (WIDTH - (WIDTH / 3. + well.getWidth() / 2)) / 2));
         score.setTranslateY(-score.getHeight() / 2 + HEIGHT / 2.);
-        
+
         root.getChildren().addAll(score);
 
-        gameLogic = new GameLogic(well.getSquareMatrix(), fallingBlock, nextBlock, score);
-        
+        // [Refatoracao 1 - Introduce Interface]
+        // Antes: new GameLogic(well.getSquareMatrix(), fallingBlock, nextBlock, score);
+        // Agora o GameLogic recebe um ScoreSink; aqui o LabeledValue (JavaFX) e adaptado por um lambda.
+        gameLogic = new GameLogic(well.getSquareMatrix(), fallingBlock, nextBlock,
+                points -> score.setValue(score.getValue() + points));
+
         scene = new Scene(root, WIDTH, HEIGHT);
         scene.setOnKeyPressed(event -> {
             if (fallingBlock != null) {
@@ -118,17 +122,25 @@ public class Coloris extends Application {
             }
         };
         animationTimer.start();
-        
+
         mediaPlayer.play();
         mediaPlayer.setOnEndOfMedia(() -> {
             mediaPlayer.seek(Duration.ZERO);
             mediaPlayer.play();
         });
-        
+
         primaryStage.show();
     }
 
     private void update() {
+        // [Refatoracao 4] Com GameState, o fim de jogo detectado ao final de uma cadeia de
+        // destruicao (callback da animacao) deixa de ser mascarado por squareDestruction().
+        // Por isso o fim de jogo e verificado tambem no inicio do ciclo.
+        if (gameLogic.isGameOver()) {
+            endGame();
+            return;
+        }
+
         if (!gameLogic.squareDestruction()) {
             gameLogic.moveFallingBlockVertically();
             gameLogic.checkCollision();
@@ -136,18 +148,7 @@ public class Coloris extends Application {
             gameLogic.destroyAdjacentSquares();
 
             if (gameLogic.isGameOver()) {
-                well.update();
-                
-                animationTimer.stop();
-                scene.setOnKeyPressed(event -> {});
-                mediaPlayer.stop();
-
-                GameOverLabel gameOverLabel = new GameOverLabel();
-                root.getChildren().add(gameOverLabel);
-
-                gameOverLabel.setTranslateX(-gameOverLabel.getBoundsInParent().getWidth() / 2 + WIDTH / 3.);
-                gameOverLabel.setTranslateY(-gameOverLabel.getBoundsInParent().getHeight() / 2 + 0.20 * well.getSquareMatrix().getHeight());
-
+                endGame();
                 return;
             }
 
@@ -155,6 +156,20 @@ public class Coloris extends Application {
             nextBlock.update();
         }
         well.update();
+    }
+
+    private void endGame() {
+        well.update();
+
+        animationTimer.stop();
+        scene.setOnKeyPressed(event -> {});
+        mediaPlayer.stop();
+
+        GameOverLabel gameOverLabel = new GameOverLabel();
+        root.getChildren().add(gameOverLabel);
+
+        gameOverLabel.setTranslateX(-gameOverLabel.getBoundsInParent().getWidth() / 2 + WIDTH / 3.);
+        gameOverLabel.setTranslateY(-gameOverLabel.getBoundsInParent().getHeight() / 2 + 0.20 * well.getSquareMatrix().getHeight());
     }
 
     public static void main(String[] args) {

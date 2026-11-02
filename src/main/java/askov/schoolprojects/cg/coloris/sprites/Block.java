@@ -68,7 +68,7 @@ public class Block extends Sprite {
             squares[i].update();
         }
     }
-    
+
     @Override
     public double getWidth() {
         return width;
@@ -87,6 +87,17 @@ public class Block extends Sprite {
         return squares[numSquares - 1];
     }
 
+    /**
+     * [Refatoracao 2 - Move Method]
+     * Coordenada Y da borda inferior do bloco. Antes este calculo estava
+     * repetido em GameLogic.moveFallingBlockHorizontally() e GameLogic.checkCollision(),
+     * usando apenas dados que pertencem a Block (feature envy).
+     */
+    public double getBottomEdgeY() {
+        Square bottomSquare = getBottomSquare();
+        return getTranslateY() + bottomSquare.getTranslateY() + bottomSquare.getBoundsInParent().getHeight();
+    }
+
     public void reorderSquares(ReorderDirection reorderDirection) {
         Square temp;
         switch (reorderDirection) {
@@ -102,13 +113,13 @@ public class Block extends Sprite {
             }
         }
     }
-    
+
     public void absorbColorsFrom(Block block) {
         for (int i = 0; i < block.numSquares; i++) {
             squares[i].absorbColorFrom(block.squares[i]);
         }
     }
-    
+
     public void setRandomSquareColors() {
         for (int i = 0; i < numSquares; i++) {
             squares[i].setSquareColor(Square.SquareColor.randomSquareColor(false));
