@@ -197,9 +197,8 @@ public class Frame extends Sprite {
     protected final Segment[] segmentsBottom;
 
     public Frame(double innerWidth, double innerHeight, int numVerticalSegments, Color backgoundColor) {
-        int numSegments = numVerticalSegments;
         double segmentWidth = borderSize = 0.22 * innerWidth;
-        double segmentHeight = innerHeight / numSegments;
+        double verticalSegmentHeight = calculateVerticalSegmentHeight(innerHeight, numVerticalSegments);
         
         Rectangle background = new Rectangle(innerWidth, innerHeight);
         background.setTranslateX(segmentWidth);
@@ -210,16 +209,16 @@ public class Frame extends Sprite {
         this.totalWidth = innerWidth + 2 * segmentWidth;
         this.totalHeight = innerHeight + 2 * segmentWidth;
 
-        segmentsLeft = new Segment[numSegments];
-        segmentsRight = new Segment[numSegments];
+        segmentsLeft = new Segment[numVerticalSegments];
+        segmentsRight = new Segment[numVerticalSegments];
         
-        for (int i = 0; i < numSegments; i++) {
-            Segment segmentLeft = segmentsLeft[i] = new Segment(segmentWidth, segmentHeight, FillType.BLUE);
-            segmentLeft.setTranslateY(segmentWidth + i * segmentHeight);
+        for (int i = 0; i < numVerticalSegments; i++) {
+            Segment segmentLeft = segmentsLeft[i] = new Segment(segmentWidth, verticalSegmentHeight, FillType.BLUE);
+            segmentLeft.setTranslateY(segmentWidth + i * verticalSegmentHeight);
 
-            Segment segmentRight = segmentsRight[i] = new Segment(segmentWidth, segmentHeight, FillType.BLUE_INVERTED);
+            Segment segmentRight = segmentsRight[i] = new Segment(segmentWidth, verticalSegmentHeight, FillType.BLUE_INVERTED);
             segmentRight.setTranslateX(segmentWidth + innerWidth);
-            segmentRight.setTranslateY(segmentWidth + i * segmentHeight);
+            segmentRight.setTranslateY(segmentWidth + i * verticalSegmentHeight);
 
             super.getChildren().addAll(segmentLeft, segmentRight);
         }
@@ -244,30 +243,42 @@ public class Frame extends Sprite {
 
         super.getChildren().addAll(leftTopSegmentConnector, rightTopSegmentConnector);
 
-        numSegments = (int) ((innerWidth / innerHeight) * numVerticalSegments);
-        segmentHeight = innerWidth / numSegments;
+        int horizontalSegmentCount = calculateHorizontalSegmentCount(innerWidth, innerHeight, numVerticalSegments);
+        double horizontalSegmentHeight = calculateHorizontalSegmentHeight(innerWidth, horizontalSegmentCount);
 
         Rotate rotate = new Rotate();
         rotate.setPivotX(0);
         rotate.setPivotY(0);
         rotate.setAngle(-90);
 
-        segmentsTop = new Segment[numSegments];
-        segmentsBottom = new Segment[numSegments];
+        segmentsTop = new Segment[horizontalSegmentCount];
+        segmentsBottom = new Segment[horizontalSegmentCount];
         
-        for (int i = 0; i < numSegments; i++) {
-            Segment segmentTop = segmentsTop[i] = new Segment(segmentWidth, segmentHeight, FillType.BLUE_INVERTED);
+        for (int i = 0; i < horizontalSegmentCount; i++) {
+            Segment segmentTop = segmentsTop[i] = new Segment(segmentWidth, horizontalSegmentHeight, FillType.BLUE_INVERTED);
             segmentTop.getTransforms().add(rotate);
             segmentTop.setTranslateY(segmentWidth);
-            segmentTop.setTranslateX(segmentWidth + i * segmentHeight);
+            segmentTop.setTranslateX(segmentWidth + i * horizontalSegmentHeight);
 
-            Segment segmentBottom = segmentsBottom[i] = new Segment(segmentWidth, segmentHeight, FillType.BLUE);
+            Segment segmentBottom = segmentsBottom[i] = new Segment(segmentWidth, horizontalSegmentHeight, FillType.BLUE);
             segmentBottom.getTransforms().add(rotate);
             segmentBottom.setTranslateY(2 * segmentWidth + innerHeight);
-            segmentBottom.setTranslateX(segmentWidth + i * segmentHeight);
+            segmentBottom.setTranslateX(segmentWidth + i * horizontalSegmentHeight);
 
             super.getChildren().addAll(segmentTop, segmentBottom);
         }
+    }
+
+    private static double calculateVerticalSegmentHeight(double innerHeight, int numVerticalSegments) {
+        return innerHeight / numVerticalSegments;
+    }
+
+    private static int calculateHorizontalSegmentCount(double innerWidth, double innerHeight, int numVerticalSegments) {
+        return (int) ((innerWidth / innerHeight) * numVerticalSegments);
+    }
+
+    private static double calculateHorizontalSegmentHeight(double innerWidth, int horizontalSegmentCount) {
+        return innerWidth / horizontalSegmentCount;
     }
 
     public double getBorderSize() {
