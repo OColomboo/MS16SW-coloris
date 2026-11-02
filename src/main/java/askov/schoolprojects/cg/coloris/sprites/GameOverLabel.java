@@ -31,7 +31,7 @@ public class GameOverLabel extends Sprite {
 
     public GameOverLabel() {
         Text labelText = new Text("GAME OVER");
-        labelText.setFont(new GameFont(GameFont.FontType.MAIN_GAME_FONT, 34).getFont());
+        labelText.setFont(GameFont.mainGameFont(34).getFont());
         labelText.setFill(Color.web("0xEEEE00"));
         
         super.getChildren().add(labelText);

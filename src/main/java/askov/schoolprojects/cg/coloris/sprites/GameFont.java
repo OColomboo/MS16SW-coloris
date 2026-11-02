@@ -19,36 +19,44 @@
 
 package askov.schoolprojects.cg.coloris.sprites;
 
+
 import javafx.scene.text.Font;
+
 
 /**
  *
  * @author Danijel Askov
  */
 public class GameFont {
-    
-    public enum FontType {
-        SEGMENTED_DISPLAY,
-        MAIN_GAME_FONT
+
+    private static final String SEGMENTED_DISPLAY_FONT_PATH = "fonts/digital-7-mono.ttf";
+    private static final String MAIN_GAME_FONT_PATH = "fonts/computerfont.ttf";
+    private static final String FALLBACK_FONT_FAMILY = "Consolas";
+
+    private final Font font;
+
+    private GameFont(Font font) {
+        this.font = font;
     }
-    
-    private Font font;
-    
-    public GameFont(FontType fontType, double size) {
+
+    public static GameFont segmentedDisplay(double size) {
+        return new GameFont(loadFont(SEGMENTED_DISPLAY_FONT_PATH, size));
+    }
+
+    public static GameFont mainGameFont(double size) {
+        return new GameFont(loadFont(MAIN_GAME_FONT_PATH, size));
+    }
+
+    private static Font loadFont(String resourcePath, double size) {
         try {
-            switch (fontType) {
-                case SEGMENTED_DISPLAY ->
-                    font = Font.loadFont(Thread.currentThread().getContextClassLoader().getResource("fonts/digital-7-mono.ttf").toExternalForm(), size);
-                case MAIN_GAME_FONT ->
-                    font = Font.loadFont(Thread.currentThread().getContextClassLoader().getResource("fonts/computerfont.ttf").toExternalForm(), size);
-            }
+            return Font.loadFont(Thread.currentThread().getContextClassLoader().getResource(resourcePath).toExternalForm(), size);
         } catch (Exception exception) {
-            font = Font.font("Consolas", size);
+            return Font.font(FALLBACK_FONT_FAMILY, size);
         }
     }
-    
+
     public Font getFont() {
         return font;
     }
-    
+
 }
