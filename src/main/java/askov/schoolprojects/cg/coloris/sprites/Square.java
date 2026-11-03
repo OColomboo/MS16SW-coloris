@@ -69,6 +69,8 @@ public class Square extends Sprite {
 
     public static final SquareColor DEFAULT_SQUARE_COLOR = SquareColor.NULL;
     private static final double SQUARE_DESTRUCTION_DURATION = 0.30; // Seconds
+    private static final double INNER_RECTANGLE_MARGIN_RATIO = 0.15; // Fraction of the square's size on each side
+    private static final double INNER_RECTANGLE_FILL_RATIO = 0.70; // Fraction of the square's size covered by the inner rectangle
 
     private final double width;
     private final double height;
@@ -85,7 +87,12 @@ public class Square extends Sprite {
         this.height = height;
         this.blockColor = blockColor;
 
-        rectangle = new Rectangle(0.15 * width, 0.15 * height, 0.70 * width, 0.70 * height);
+        rectangle = new Rectangle(
+                INNER_RECTANGLE_MARGIN_RATIO * width,
+                INNER_RECTANGLE_MARGIN_RATIO * height,
+                INNER_RECTANGLE_FILL_RATIO * width,
+                INNER_RECTANGLE_FILL_RATIO * height
+        );
         rectangle.setStroke(null);
 
         triangle1 = new Polygon(
@@ -149,10 +156,10 @@ public class Square extends Sprite {
             
             KeyFrame keyFrame1 = new KeyFrame(Duration.ZERO, xKeyValue1, yKeyValue1, widthKeyValue1, heightKeyValue1);
             
-            KeyValue xKeyValue2 = new KeyValue(rectangle.xProperty(), 0.15 * width, Interpolator.DISCRETE);
-            KeyValue yKeyValue2 = new KeyValue(rectangle.yProperty(), 0.15 * height, Interpolator.DISCRETE);
-            KeyValue widthKeyValue2 = new KeyValue(rectangle.widthProperty(), 0.70 * width, Interpolator.DISCRETE);
-            KeyValue heightKeyValue2 = new KeyValue(rectangle.heightProperty(), 0.70 * height, Interpolator.DISCRETE);
+            KeyValue xKeyValue2 = new KeyValue(rectangle.xProperty(), INNER_RECTANGLE_MARGIN_RATIO * width, Interpolator.DISCRETE);
+            KeyValue yKeyValue2 = new KeyValue(rectangle.yProperty(), INNER_RECTANGLE_MARGIN_RATIO * height, Interpolator.DISCRETE);
+            KeyValue widthKeyValue2 = new KeyValue(rectangle.widthProperty(), INNER_RECTANGLE_FILL_RATIO * width, Interpolator.DISCRETE);
+            KeyValue heightKeyValue2 = new KeyValue(rectangle.heightProperty(), INNER_RECTANGLE_FILL_RATIO * height, Interpolator.DISCRETE);
             
             KeyFrame keyFrame2 = new KeyFrame(Duration.seconds(SQUARE_DESTRUCTION_DURATION), xKeyValue2, yKeyValue2, widthKeyValue2, heightKeyValue2);
             
