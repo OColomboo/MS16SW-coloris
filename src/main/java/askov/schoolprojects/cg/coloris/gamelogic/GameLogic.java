@@ -33,7 +33,15 @@ import javafx.animation.ParallelTransition;
  */
 public class GameLogic {
     
-    public enum MoveDirection {LEFT, RIGHT}
+    public enum MoveDirection {
+        LEFT(-1), RIGHT(1);
+
+        private final int columnOffset;
+
+        MoveDirection(int columnOffset) {
+            this.columnOffset = columnOffset;
+        }
+    }
     private static final double CRITICAL_DISTANCE = 5; // Pixels
     private static final double DEFAULT_FALLING_BLOCK_SPEED = 100; // Pixels per second
     private static final double REFRESH_RATE = 60; // Frames per second
@@ -74,30 +82,19 @@ public class GameLogic {
     }
     
     public void moveFallingBlockHorizontally(MoveDirection fallingBlockMoveDirection) {
-        Square topBlock;
-        double fallingBlockY = fallingBlock.getTranslateY() + fallingBlock.getBottomSquare().getTranslateY() + fallingBlock.getBottomSquare().getBoundsInParent().getHeight();
-        switch (fallingBlockMoveDirection) {
-            case LEFT -> {
-                if (fallingBlockColumn > 0) {
-                    topBlock = topBlocks.get(fallingBlockColumn - 1);
-                    if (topBlock != null && fallingBlockY + CRITICAL_DISTANCE >= squareMatrix.getTranslateY() + topBlock.getTranslateY()) {
-                        break;
-                    }
-                    fallingBlock.setTranslateX(fallingBlock.getTranslateX() - fallingBlock.getBoundsInParent().getWidth());
-                    fallingBlockColumn--;
-                }
-            }
-            case RIGHT -> {
-                if (fallingBlockColumn < squareMatrix.getNumColumns() - 1) {
-                    topBlock = topBlocks.get(fallingBlockColumn + 1);
-                    if (topBlock != null && fallingBlockY + CRITICAL_DISTANCE >= squareMatrix.getTranslateY() + topBlock.getTranslateY()) {
-                        break;
-                    }
-                    fallingBlock.setTranslateX(fallingBlock.getTranslateX() + fallingBlock.getBoundsInParent().getWidth());
-                    fallingBlockColumn++;
-                }
-            }
+        int targetColumn = fallingBlockColumn + fallingBlockMoveDirection.columnOffset;
+        if (targetColumn < 0 || targetColumn >= squareMatrix.getNumColumns()) {
+            return;
         }
+
+        Square topBlock = topBlocks.get(targetColumn);
+        double fallingBlockY = fallingBlock.getTranslateY() + fallingBlock.getBottomSquare().getTranslateY() + fallingBlock.getBottomSquare().getBoundsInParent().getHeight();
+        if (topBlock != null && fallingBlockY + CRITICAL_DISTANCE >= squareMatrix.getTranslateY() + topBlock.getTranslateY()) {
+            return;
+        }
+
+        fallingBlock.setTranslateX(fallingBlock.getTranslateX() + fallingBlockMoveDirection.columnOffset * fallingBlock.getBoundsInParent().getWidth());
+        fallingBlockColumn = targetColumn;
     }
     
     public void speedUpFallingBlock() {
