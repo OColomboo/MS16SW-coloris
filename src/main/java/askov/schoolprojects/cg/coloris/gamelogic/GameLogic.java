@@ -229,15 +229,35 @@ public class GameLogic {
             
             squareDestruction = true;
         } else {
-            if (squareMatrix.isColumnOverflow()) {
-                gameOver = true;
-            } else if (numDestroyedSquares >= 5) {
-                removeBottomRow();
-            } else {
-                squareDestruction = false;
-                numDestroyedSquares = 0;
-            }
+            resolveCompletedSquareSearch();
         }
+    }
+
+    private void resolveCompletedSquareSearch() {
+        if (hasOverflowedColumn()) {
+            finishGame();
+        } else if (shouldRemoveBonusRow()) {
+            removeBonusBottomRow();
+        } else {
+            completeDestructionRound();
+        }
+    }
+
+    private boolean hasOverflowedColumn() {
+        return squareMatrix.isColumnOverflow();
+    }
+
+    private boolean shouldRemoveBonusRow() {
+        return numDestroyedSquares >= 5;
+    }
+
+    private void finishGame() {
+        gameOver = true;
+    }
+
+    private void completeDestructionRound() {
+        squareDestruction = false;
+        numDestroyedSquares = 0;
     }
     
     private void removeGaps() {
@@ -282,7 +302,7 @@ public class GameLogic {
         }
     }
     
-    private void removeBottomRow() {
+    private void removeBonusBottomRow() {
         ParallelTransition parallelTransition = new ParallelTransition();
         parallelTransition.setCycleCount(1);
         parallelTransition.setAutoReverse(false);
