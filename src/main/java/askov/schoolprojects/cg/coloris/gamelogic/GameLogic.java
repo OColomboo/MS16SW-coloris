@@ -41,6 +41,7 @@ public class GameLogic {
     private static final double MAX_SPEED = DEFAULT_FALLING_BLOCK_SPEED * SPEED_UP_FACTOR;
 
     private final SquareMatrix squareMatrix;
+    private final AdjacentSquaresFinder adjacentSquaresFinder;
     private final List<Square> topBlocks = new ArrayList<>();
     private final List<Integer> topBlockRows = new ArrayList<>();
     
@@ -58,6 +59,7 @@ public class GameLogic {
 
     public GameLogic(SquareMatrix squareMatrix, Block fallingBlock, Block nextBlock, LabeledValue score) {
         this.squareMatrix = squareMatrix;
+        this.adjacentSquaresFinder = new AdjacentSquaresFinder(squareMatrix);
         this.fallingBlock = fallingBlock;
         this.nextBlock = nextBlock;
         this.score = score;
@@ -158,64 +160,11 @@ public class GameLogic {
     }
  
     public void destroyAdjacentSquares() {
-        List<Square> adjacentSquares = new ArrayList<>();
-        
-        for (int i = 0; i < squareMatrix.getNumRows(); i++) {
-            for (int j = 0; j < squareMatrix.getNumColumns(); j++) {
-                Square currentSquare = squareMatrix.getSquare(i, j);
-                
-                if (currentSquare.getSquareColor() == Square.DEFAULT_SQUARE_COLOR) {
-                    continue;
-                }
-                
-                // Try to find same-colored squares in currentSquare's row
-                int k = j + 1;
-                int numAdjacentSquares = 1;
-                while (k < squareMatrix.getNumColumns()) {
-                    if (squareMatrix.getSquare(i, k).getSquareColor() == currentSquare.getSquareColor()) {
-                        numAdjacentSquares++;
-                    } else {
-                        break;
-                    }
-                    k++;
-                }
-                
-                if (numAdjacentSquares > 2) {
-                    for (k = j; k < j + numAdjacentSquares; k++) {
-                        Square adjacentSquare = squareMatrix.getSquare(i, k);
-                        if (!adjacentSquares.contains(adjacentSquare)) {
-                            adjacentSquares.add(adjacentSquare);
-                            numDestroyedSquares++;
-                            score.setValue(score.getValue() + 1);
-                        }
-                    }
-                }
-                
-                // Try to find same-colored squares in currentSquare's column
-                k = i + 1;
-                numAdjacentSquares = 1;
-                while (k < squareMatrix.getNumRows()) {
-                    if (squareMatrix.getSquare(k, j).getSquareColor() == currentSquare.getSquareColor()) {
-                        numAdjacentSquares++;
-                    } else {
-                        break;
-                    }
-                    k++;
-                }
-                
-                if (numAdjacentSquares > 2) {
-                    for (k = i; k < i + numAdjacentSquares; k++) {
-                        Square adjacentSquare = squareMatrix.getSquare(k, j);
-                        if (!adjacentSquares.contains(adjacentSquare)) {
-                            adjacentSquares.add(adjacentSquare);
-                            numDestroyedSquares++;
-                            score.setValue(score.getValue() + 1);
-                        }
-                    }
-                }
-            }
-        }
-        
+        List<Square> adjacentSquares = adjacentSquaresFinder.findAdjacentSquares();
+
+        numDestroyedSquares += adjacentSquares.size();
+        score.setValue(score.getValue() + adjacentSquares.size());
+
         if (!adjacentSquares.isEmpty()) {
             ParallelTransition parallelTransition = new ParallelTransition();
             parallelTransition.setCycleCount(1);
