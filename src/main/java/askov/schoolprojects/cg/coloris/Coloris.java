@@ -66,33 +66,53 @@ public class Coloris extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        LabeledValue score = buildUserInterface();
+
+        gameLogic = new GameLogic(well.getSquareMatrix(), fallingBlock, nextBlock, score);
+
+        scene = new Scene(root, WIDTH, HEIGHT);
+        configureKeyboard();
+
+        primaryStage.setTitle("Coloris");
+        primaryStage.setScene(scene);
+        primaryStage.sizeToScene();
+        primaryStage.setResizable(false);
+
+        startAnimationTimer();
+        startMusic();
+
+        primaryStage.show();
+    }
+
+    private LabeledValue buildUserInterface() {
         root = new Group();
 
         root.getChildren().addAll(universe, well);
-        
+
         well.setTranslateX(-well.getWidth() / 2 + WIDTH / 3.);
         well.setTranslateY(-well.getBorderSize());
 
         fallingBlock = well.getFallingBlock();
-        
+
         nextBlock.setTranslateX(-BLOCK_SIZE / 2 + 0.50 * well.getTranslateX());
         nextBlock.setTranslateY(0.15 * HEIGHT);
-        
+
         GameLogo gameLogo = new GameLogo();
         gameLogo.setTranslateX(-gameLogo.getWidth() / 2 + 0.50 * well.getTranslateX());
         gameLogo.setTranslateY(nextBlock.getTranslateY() + nextBlock.getHeight() + GameLogo.FONT_SIZE + 10);
 
         root.getChildren().addAll(nextBlock, gameLogo);
-        
+
         LabeledValue score = new LabeledValue(SQUARE_MATRIX_WIDTH, HEIGHT / 6, "SCORE", 0);
         score.setTranslateX(-score.getWidth() / 2 + (WIDTH - (WIDTH - (WIDTH / 3. + well.getWidth() / 2)) / 2));
         score.setTranslateY(-score.getHeight() / 2 + HEIGHT / 2.);
-        
+
         root.getChildren().addAll(score);
 
-        gameLogic = new GameLogic(well.getSquareMatrix(), fallingBlock, nextBlock, score);
-        
-        scene = new Scene(root, WIDTH, HEIGHT);
+        return score;
+    }
+
+    private void configureKeyboard() {
         scene.setOnKeyPressed(event -> {
             if (fallingBlock != null) {
                 switch (event.getCode()) {
@@ -105,12 +125,9 @@ public class Coloris extends Application {
                 }
             }
         });
+    }
 
-        primaryStage.setTitle("Coloris");
-        primaryStage.setScene(scene);
-        primaryStage.sizeToScene();
-        primaryStage.setResizable(false);
-
+    private void startAnimationTimer() {
         animationTimer = new AnimationTimer() {
             @Override
             public void handle(long currentNanoTime) {
@@ -118,14 +135,14 @@ public class Coloris extends Application {
             }
         };
         animationTimer.start();
-        
+    }
+
+    private void startMusic() {
         mediaPlayer.play();
         mediaPlayer.setOnEndOfMedia(() -> {
             mediaPlayer.seek(Duration.ZERO);
             mediaPlayer.play();
         });
-        
-        primaryStage.show();
     }
 
     private void update() {
