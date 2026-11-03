@@ -23,13 +23,10 @@ package askov.schoolprojects.cg.coloris.sprites;
  *
  * @author Danijel Askov
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings("WeakerAccess")
 public class Block extends Sprite {
 
-    public enum ReorderDirection { UP, DOWN }
-
     public static final int DEFAULT_NUM_SQUARES = 3;
-    public static final ReorderDirection DEFAULT_REORDER_DIRECTION = ReorderDirection.UP;
 
     private final Square[] squares;
     private final int numSquares;
@@ -87,22 +84,12 @@ public class Block extends Sprite {
         return squares[numSquares - 1];
     }
 
-    public void reorderSquares(ReorderDirection reorderDirection) {
-        Square temp;
-        switch (reorderDirection) {
-            case UP -> {
-                temp = squares[0];
-                if (numSquares - 1 >= 0) System.arraycopy(squares, 1, squares, 0, numSquares - 1);
-                squares[numSquares - 1] = temp;
-            }
-            case DOWN -> {
-                temp = squares[numSquares - 1];
-                System.arraycopy(squares, 0, squares, 1, numSquares - 1);
-                squares[0] = temp;
-            }
-        }
+    public void reorderSquares() {
+        Square temp = squares[0];
+        System.arraycopy(squares, 1, squares, 0, numSquares - 1);
+        squares[numSquares - 1] = temp;
     }
-    
+
     public void absorbColorsFrom(Block block) {
         for (int i = 0; i < block.numSquares; i++) {
             squares[i].absorbColorFrom(block.squares[i]);
@@ -113,10 +100,6 @@ public class Block extends Sprite {
         for (int i = 0; i < numSquares; i++) {
             squares[i].setSquareColor(Square.SquareColor.randomSquareColor(false));
         }
-    }
-
-    public void reorderSquares() {
-        reorderSquares(DEFAULT_REORDER_DIRECTION);
     }
 
 }
