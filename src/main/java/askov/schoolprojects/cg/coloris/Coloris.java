@@ -120,6 +120,9 @@ public class Coloris extends Application {
         viewportRoot.getChildren().addAll(fullScreenBackground, universe, scaledContent);
 
         scene = new Scene(viewportRoot, WIDTH, HEIGHT);
+        scene.widthProperty().addListener((observable, oldValue, newValue) -> updateViewportScale());
+        scene.heightProperty().addListener((observable, oldValue, newValue) -> updateViewportScale());
+        primaryStage.fullScreenProperty().addListener((observable, oldValue, newValue) -> updateViewportScale());
 
         primaryStage.setTitle("Coloris");
         primaryStage.setScene(scene);
@@ -128,33 +131,7 @@ public class Coloris extends Application {
         primaryStage.sizeToScene();
         primaryStage.setResizable(false);
         primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-
-        Runnable syncSceneToStage = () -> {
-            double targetWidth = primaryStage.isFullScreen() ? primaryStage.getWidth() : WIDTH;
-            double targetHeight = primaryStage.isFullScreen() ? primaryStage.getHeight() : HEIGHT;
-
-            if (scene == null || scene.getWidth() != targetWidth || scene.getHeight() != targetHeight) {
-                scene = new Scene(viewportRoot, targetWidth, targetHeight);
-                primaryStage.setScene(scene);
-            }
-            updateViewportScale();
-        };
-
-        primaryStage.fullScreenProperty().addListener((observable, oldValue, newValue) -> syncSceneToStage.run());
-        primaryStage.widthProperty().addListener((observable, oldValue, newValue) -> {
-            if (primaryStage.isFullScreen()) {
-                syncSceneToStage.run();
-            }
-        });
-        primaryStage.heightProperty().addListener((observable, oldValue, newValue) -> {
-            if (primaryStage.isFullScreen()) {
-                syncSceneToStage.run();
-            }
-        });
-        scene.widthProperty().addListener((observable, oldValue, newValue) -> updateViewportScale());
-        scene.heightProperty().addListener((observable, oldValue, newValue) -> updateViewportScale());
-
-        syncSceneToStage.run();
+        updateViewportScale();
 
         animationTimer = new AnimationTimer() {
             @Override
@@ -174,6 +151,10 @@ public class Coloris extends Application {
     }
 
     private void updateViewportScale() {
+        if (scene == null) {
+            return;
+        }
+
         double sceneWidth = scene.getWidth();
         double sceneHeight = scene.getHeight();
 
